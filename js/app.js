@@ -1,41 +1,110 @@
-// Enemies our player must avoid
-var Enemy = function() {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
-    this.sprite = 'images/enemy-bug.png';
+const BLOCK_WIDTH = 101;
+const BLOCK_HEIGHT = 85;
+const ENEMIES_CONF = {
+    MAX_SPEED: 250,
+    MIN_SPEED: 50,
+    OFFSET_Y: 20,
+    SPRITE: 'images/enemy-bug.png',
+    START_X: 0,
+};
+const PLAYER_CONF = {
+    HEIGHT: 60,
+    SPRITE: 'images/char-boy.png',
+    START_X: BLOCK_WIDTH * 2,
+    START_Y: BLOCK_WIDTH * 4,
+    WIDTH: 80,
 };
 
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
+const Character = function (x, y, sprite) {
+    this.x = x;
+    this.y = y;
+    this.sprite = sprite;
 };
 
-// Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
+Character.prototype.render = function () {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+const Enemy = function (x, y, player) {
+    Character.call(this, x, y, ENEMIES_CONF.SPRITE);
+    this.speed = this.getRandomSpeed();
+    this.player = player;
+};
 
+Enemy.prototype = Object.create(Character.prototype);
 
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
+Enemy.prototype.getRandomSpeed = function () {
+    return Math.random() * (ENEMIES_CONF.MAX_SPEED - ENEMIES_CONF.MIN_SPEED) + ENEMIES_CONF.MIN_SPEED;
+};
 
+Enemy.prototype.isCollision = function () {
+    if (
+        this.player.x < this.x + PLAYER_CONF.WIDTH &&
+        this.player.x + PLAYER_CONF.WIDTH > this.x &&
+        this.player.y < this.y + PLAYER_CONF.HEIGHT &&
+        this.player.y + PLAYER_CONF.HEIGHT > this.y
+    ) {
+        alert('You lose!')
+        this.player.x = PLAYER_CONF.START_X;
+        this.player.y = PLAYER_CONF.START_Y;
+    }
+};
 
+Enemy.prototype.update = function (dt) {
+    if (this.x > ctx.canvas.width) {
+        this.x = 0;
+        this.speed = this.getRandomSpeed();
+    } else {
+        this.x += this.speed * dt;
+        this.isCollision();
+    }
+};
 
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keyup', function(e) {
-    var allowedKeys = {
+const Player = function (x, y) {
+    Character.call(this, x, y, PLAYER_CONF.SPRITE);
+};
+
+Player.prototype = Object.create(Character.prototype);
+Player.prototype.update = function () {
+    if (this.y < 0) {
+        this.x = PLAYER_CONF.START_X;
+        this.y = PLAYER_CONF.START_Y;
+        alert('You win!')
+    }
+};
+
+Player.prototype.handleInput = function (key) {
+    switch (key) {
+        case 'left':
+            if (this.x > 0) {
+                this.x -= BLOCK_WIDTH;
+                return;
+            }
+        case 'right':
+            if (this.x < ctx.canvas.width - BLOCK_WIDTH) {
+                this.x += BLOCK_WIDTH;
+                return;
+            }
+        case 'up':
+            if (this.y > 0) {
+                this.y -= BLOCK_HEIGHT;
+                return;
+            }
+        case 'down':
+            if (this.y < PLAYER_CONF.START_Y) {
+                this.y += BLOCK_HEIGHT;
+                return;
+            }
+    }
+};
+
+const player = new Player(PLAYER_CONF.START_X, PLAYER_CONF.START_Y);
+const allEnemies = [1, 2, 3].map(positionY => {
+    return new Enemy(ENEMIES_CONF.START_X, (positionY * BLOCK_HEIGHT) - ENEMIES_CONF.OFFSET_Y, player);
+});
+
+document.addEventListener('keyup', function (e) {
+    const allowedKeys = {
         37: 'left',
         38: 'up',
         39: 'right',
