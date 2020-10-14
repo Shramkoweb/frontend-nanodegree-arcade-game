@@ -78,23 +78,23 @@ Player.prototype.handleInput = function (key) {
         case 'left':
             if (this.x > 0) {
                 this.x -= BLOCK_WIDTH;
-                return;
             }
+            break;
         case 'right':
             if (this.x < ctx.canvas.width - BLOCK_WIDTH) {
                 this.x += BLOCK_WIDTH;
-                return;
             }
+            break;
         case 'up':
             if (this.y > 0) {
                 this.y -= BLOCK_HEIGHT;
-                return;
             }
+            break;
         case 'down':
             if (this.y < PLAYER_CONF.START_Y) {
                 this.y += BLOCK_HEIGHT;
-                return;
             }
+            break;
     }
 };
 
