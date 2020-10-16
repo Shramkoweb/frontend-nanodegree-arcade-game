@@ -56,7 +56,6 @@ Enemy.prototype.update = function (dt) {
         this.speed = this.getRandomSpeed();
     } else {
         this.x += this.speed * dt;
-        this.isCollision();
     }
 };
 
